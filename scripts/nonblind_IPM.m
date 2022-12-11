@@ -1,6 +1,5 @@
 %setup
 setup;
-%setup_chip;
 
 %set amplitude to be intesnity Poisson metric
 mode = 'IPM';
@@ -24,39 +23,31 @@ end
 param.lambda = 0.15;
 param.beta1 = 0.25;
 param.beta2 = 0.25;
-param.batch_size = 5;
-param.step_size = 15*sqrt(param.batch_size);
 param.z_update_mode = 'ePIE';
-%param.gamma = 0.75;
 param.maxiter = 300;
 param.alpha = 0.8;
 param.init_z = nu*(ones(N_obj, N_obj)+1i*ones(N_obj, N_obj))/sqrt(2);
-
-rng('shuffle')
-
-DR_z = nonblind_ptycho_DR(N_obj, sqrt(dp1), ind_b, probe_true, 15);
-
-
-rng('shuffle')
-
-[ipm_z5_iso, ipm_z5_iso_objective] = official_stochastic_iso_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-[ipm_z5_AITV, ipm_z5_AITV_objective] = official_stochastic_AITV_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-
 param.batch_size = 10;
 param.step_size = 15*sqrt(param.batch_size);
-[ipm_z10_iso, ipm_z10_iso_objective] = official_stochastic_iso_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-[ipm_z10_AITV, ipm_z10_AITV_objective] = official_stochastic_AITV_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-
-param.batch_size = 20;
-param.step_size = 15*sqrt(param.batch_size);
-[ipm_z20_iso, ipm_z20_iso_objective] = official_stochastic_iso_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-[ipm_z20_AITV, ipm_z20_AITV_objective] = official_stochastic_AITV_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-
-param.batch_size = 25;
-param.step_size = 15*sqrt(param.batch_size);
-[ipm_z25_iso, ipm_z25_iso_objective] = official_stochastic_iso_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
-[ipm_z25_AITV, ipm_z25_AITV_objective] = official_stochastic_AITV_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
 
 
-[ipm_zfull_AITV, ipm_zfull_AITV_objective] = AITV_ADMM_nonblind(N_obj, probe_true, dp1, ind_b, 0.15, 0.25, 0.25, 0.8, mode);
-[ipm_zfull_iso, ipm_zfull_iso_objective] = iso_ADMM_nonblind(N_obj, probe_true, dp1, ind_b, 0.15, 0.25, 0.25, mode);
+rng('shuffle')
+%stochastic ADMM with isotropic TV
+[ipm_iso, ipm_iso_objective] = official_stochastic_iso_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
+[~,ciso] = compute_snr_blind(ipm_iso/nu, obj_true);
+iso_ssim_result = ssim(abs(ciso*ipm_iso/nu), abs(obj_true));
+angle_iso_ssim_result = compute_angle_ssim(ciso*ipm_iso, obj_true);
+
+%stochastic ADMM with AITV (alpha = 0.8)
+[ipm_AITV, ipm_AITV_objective] = official_stochastic_AITV_nonblind_ADMM(N_obj, probe_true, dp1, ind_b, param, mode);
+[~,cAITV] = compute_snr_blind(ipm_AITV/nu, obj_true);
+aitv_ssim_result = ssim(abs(cAITV*ipm_AITV/nu), abs(obj_true));
+angle_aitv_ssim_result = compute_angle_ssim(cAITV*ipm_AITV, obj_true);
+
+%plot figures
+figure; subplot(2,3,1); imagesc(abs(obj_true)); axis off; axis image; colormap gray; title('Original Mag.')
+subplot(2,3,2); imagesc(abs(ipm_iso)); axis off; axis image; colormap gray; title('isoTV Mag.')
+subplot(2,3,3); imagesc(abs(ipm_AITV)); axis off; axis image; colormap gray; title('AITV Mag.')
+subplot(2,3,4); imagesc(angle(obj_true)); axis off; axis image; colormap gray; title('Original Phase')
+subplot(2,3,5); imagesc(angle(ciso*ipm_iso), [0,0.4]); axis off; axis image; colormap gray; title('isoTV Phase')
+subplot(2,3,6); imagesc(angle(cAITV*ipm_AITV),[0,0.4]); axis off; axis image; colormap gray; title('AITV Phase')
