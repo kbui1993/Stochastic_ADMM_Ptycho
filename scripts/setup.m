@@ -5,16 +5,18 @@
 more off;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%load data%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf('Load data...\n');
+% fprintf('Load data...\n');
 % sample = 'chip';
 sample = 'cameraman';
 stepSize_true = 1e-07;
 datastr=[sample,num2str(stepSize_true),'_100_aperiodic'];
 load([datastr,'.mat'], '-mat');
 
+
 %The data the contains the following variables
 %   -obj: complex image
 %   -dx: step size used for translating probe
+%   -dp: the set of scans obtained by probing the object.
 %   -ppX: set of x-coordinates of the probe
 %   -ppY: set of y-coordinates of the probe
 %   -probe_true: true_probe

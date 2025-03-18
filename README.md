@@ -13,3 +13,6 @@ Official code for the paper "A Stochastic ADMM Algorithm for Large-Scale Ptychog
   publisher={IOP Publishing}
 }
 ```
+
+# Generating your own ptychography data
+If you want to generate your own ptychograpy data and test it, please refer to ./scripts/generate_ptycho_data_example for an example.

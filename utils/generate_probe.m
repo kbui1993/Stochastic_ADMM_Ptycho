@@ -1,10 +1,16 @@
-function [probe,Pc] = generate_probe(N, lambda, dx, Ls, setup)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
-%Parameters:    N      -> number of pixels
-%               lambda -> the wave length 
-%               dx     -> pixel size (in sample plane)
-%               Ls     -> distance from focal plane to sample
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%This function simulates generating a probe based on a ptychographic
+%instrument.
+%Input:
+%   N: size of the probe
+%   lambda: wavelength
+%   dx: pixel size in sample plane
+%   Ls: distance from focal plane to sample
+%   setup: type of ptychography instrument
+%Output:
+%   probe: generated probe
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function probe = generate_probe(N, lambda, dx, Ls, setup)
 
     %Fresnel Zone Plate
     switch setup
@@ -26,19 +32,18 @@ function [probe,Pc] = generate_probe(N, lambda, dx, Ls, setup)
     D_FZP=180e-6;%dimeter of the FZP
     D_H=60e-6;%central beamstop
 
-    %pixel size on FZP plane
+    % pixel size on FZP plane
     dx_fzp=lambda*fl/N/dx;
-    %Coordinate on FZP plane
+    
+    % Coordinate on FZP plane
     lx_fzp=linspace(-dx_fzp*N/2,dx_fzp*N/2,N);
     [x_fzp,y_fzp]=meshgrid(lx_fzp);
-    %Transmission function of the FZP
+    
+    % Transmission function of the FZP
     T=exp(-1j*2*pi/lambda*(x_fzp.^2+y_fzp.^2)/2/fl); 
     C=double(sqrt(x_fzp.^2+y_fzp.^2)<=(D_FZP/2));% Cercular function of FZP
-    Pc=1-C;
     H=double(sqrt(x_fzp.^2+y_fzp.^2)>=(D_H/2));%cental block
 
-    %probe on sample plane
+    % probe on sample plane
     probe=fresnel_propagation(C.*T.*H,dx_fzp,(fl+Ls),lambda);
-    %figure(1);imagesc(abs(probe));axis image
-    %figure(2);imagesc(angle(probe));axis image
 end
